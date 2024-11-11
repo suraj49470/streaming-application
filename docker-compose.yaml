@@ -1,0 +1,174 @@
+version: "3.8"
+services:
+  streaming-user-frontend-service:
+    hostname: streaming-user-frontend-service
+    container_name: streaming-user-frontend-service
+    build:
+      context: ./streaming-user-frontend-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - streaming-upload-management-service
+      - streaming-post-listing-service
+  streaming-admin-frontend-service:
+    hostname: streaming-admin-frontend-service
+    container_name: streaming-admin-frontend-service
+    build:
+      context: ./streaming-admin-frontend-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 3001:3001
+    depends_on:
+      - streaming-upload-management-service
+      - streaming-post-listing-service
+  streaming-post-listing-service:
+    hostname: streaming-post-listing-service
+    container_name: streaming-post-listing-service
+    build:
+      context: ./streaming-post-listing-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 5002:5002
+    depends_on:
+      - streaming-redis
+      - streaming-postgres
+      # - streaming-mongo
+  streaming-upload-management-service:
+    hostname: streaming-upload-management-service
+    container_name: streaming-upload-management-service
+    build:
+      context: ./streaming-upload-management-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 5000:5000
+    depends_on:
+      - streaming-transcoding-service
+      - streaming-postgres
+      - streaming-kafka
+  streaming-transcoding-service:
+    hostname: streaming-transcoding-service
+    container_name: streaming-transcoding-service
+    build:
+      context: ./streaming-transcoding-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 5001:5001
+    depends_on:
+      - streaming-postgres
+      - streaming-kafka
+      - streaming-redis
+      # - streaming-mongo
+  streaming-redis:
+    hostname: streaming-redis
+    container_name: streaming-redis
+    image: redis:8.0-M02-alpine
+    ports:
+      - 6379:6379
+    volumes:
+      - streaming_redis:/data
+    restart: always
+  streaming-postgres:
+    hostname: streaming-postgres
+    image: postgres:latest
+    container_name: streaming-postgres
+    environment:
+      - POSTGRES_USER=streaming
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=streaming
+    ports:
+      - 5433:5432
+    volumes:
+      - streaming_postgres:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - streaming
+  streaming-pgadmin:
+    hostname: streaming-pgadmin
+    image: dpage/pgadmin4:latest
+    container_name: streaming-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    ports:
+      - 5555:80
+    depends_on:
+      - streaming-postgres
+    restart: always
+    networks:
+      - streaming
+    volumes:
+      - streaming_postgres_pgadmin:/var/lib/pgadmin
+  streaming-zookeeper:
+    image: bitnami/zookeeper:latest
+    container_name: streaming-zookeeper
+    hostname: streaming-zookeeper
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    ports:
+      - 2181:2181
+    restart: always
+    volumes:
+      - streaming_zookeeper:/bitnami/zookeeper
+    networks:
+      - streaming
+  streaming-kafka:
+    image: bitnami/kafka:latest
+    container_name: streaming-kafka
+    hostname: streaming-kafka
+    environment:
+      - KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_LISTENER_INTERNAL_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_ADVERTISED_LISTENER=PLAINTEXT://streaming-kafka:9092
+      - KAFKA_LISTENER_PORT=9092
+      - KAFKA_LISTENER_INTERNAL_PORT=9092
+      - KAFKA_LISTENER_NAME=PLAINTEXT
+      - KAFKA_LISTENER_INTERNAL_NAME=INTERNAL
+      - KAFKA_LISTENER_NAME_INTERNAL=INTERNAL
+      - KAFKA_ZOOKEEPER_CONNECT=streaming-zookeeper:2181
+    ports:
+      - 9092:9092
+    volumes:
+      - streaming_kafka:/bitnami/kafka
+    depends_on:
+      - streaming-zookeeper
+    restart: always
+    networks:
+      - streaming
+  # streaming-mongo:
+  #   hostname: streaming-mongo
+  #   container_name: streaming-mongo
+  #   image: mongo:noble
+  #   volumes:
+  #     - streaming_mongodb:/data/db
+  #   networks:
+  #     - streaming
+  #   ports:
+  #     - 27017:27017
+  #   restart: always
+networks:
+  streaming:
+volumes:
+  streaming:
+  streaming_redis:
+  streaming_postgres:
+  streaming_postgres_pgadmin:
+  streaming_mongodb:
+  streaming_kafka:
+  streaming_zookeeper:

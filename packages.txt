@@ -1,0 +1,9 @@
+backend :
+    npm install express jsonwebtoken express-session dotenv --save
+    npm install nodemon -D --save 
+frontend :
+    npm install react-redux @redux/toolkit react-router-dom    
+
+
+docker-compose up --build
+docker-compose down 
