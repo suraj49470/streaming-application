@@ -74,6 +74,20 @@ services:
       - streaming-kafka
       - streaming-redis
       # - streaming-mongo
+  streaming-auth-service:
+    hostname: streaming-auth-service
+    container_name: streaming-auth-service
+    build:
+      context: ./streaming-auth-service
+      dockerfile: Dockerfile
+    networks:
+      - streaming
+    restart: always
+    ports:
+      - 5003:5003
+    depends_on:
+      - streaming-postgres
+      - streaming-redis
   streaming-redis:
     hostname: streaming-redis
     container_name: streaming-redis
@@ -95,6 +109,7 @@ services:
       - 5433:5432
     volumes:
       - streaming_postgres:/var/lib/postgresql/data
+      - ./utilities/database:/docker-entrypoint-initdb.d/
     restart: always
     networks:
       - streaming

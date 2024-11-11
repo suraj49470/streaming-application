@@ -4,9 +4,10 @@ const express = require("express");
 const app = express();
 const httpServer = http.createServer(app);
 const PORT = process.env.PORT || 5000;
+const { hostname } = require("os");
 
 app.get('/healthz',(req,res) => {
-    res.status(200).send('ok')
+  res.status(200).send(`${hostname()} is up and running`);
 })
 
 httpServer

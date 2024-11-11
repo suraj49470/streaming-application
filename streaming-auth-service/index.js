@@ -3,7 +3,7 @@ const http = require("node:http");
 const express = require("express");
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5003;
 const { hostname } = require("os");
 
 app.get("/healthz", (req, res) => {
