@@ -51,8 +51,8 @@ INSERT INTO Users (firstname, lastname, dob, email, password, active, role_id) V
 
 
 -- store procedure to get user by email and password    
-CREATE OR REPLACE FUNCTION UserSignIn(user_email varchar(50), password varchar(100))
-RETURNS TABLE(firstname varchar(25), lastname varchar(25), email varchar(50))
+CREATE OR REPLACE FUNCTION UserSignIn(user_email varchar(100), password varchar(100))
+RETURNS TABLE(firstname varchar(50), lastname varchar(50), email varchar(100))
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -62,4 +62,30 @@ BEGIN
     WHERE 
         U.email = user_email AND U.password = password AND U.active = TRUE;
 END;
-$$
+$$;
+
+-- stored procedure to register user
+CREATE OR REPLACE FUNCTION UserRegistration(
+    firstname varchar(50),
+    lastname varchar(50),
+    dob date,
+    email varchar(100),
+    password varchar(100),
+    active boolean,
+    role_id integer
+)
+RETURNS text
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO public.Users (firstname, lastname, dob, email, password, active, role_id)
+    VALUES (firstname, lastname, dob, email, password, active, role_id);
+    
+    RETURN 'User successfully registered';
+EXCEPTION
+    WHEN unique_violation THEN
+        RETURN 'Registration failed: User with this email already exists';
+    WHEN OTHERS THEN
+        RETURN 'Registration failed: An unexpected error occurred';
+END;
+$$;
