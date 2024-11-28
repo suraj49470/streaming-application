@@ -9,13 +9,13 @@ CREATE TABLE IF NOT EXISTS Roles (
 
 CREATE TABLE IF NOT EXISTS Users (
     id SERIAL PRIMARY KEY,
-    firstname VARCHAR(25) NOT NULL,
-    lastname VARCHAR(25) NOT NULL,
+    firstname VARCHAR(50) NOT NULL,
+    lastname VARCHAR(50) NOT NULL,
     dob DATE NOT NULL,
-    email VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     password VARCHAR(100) NOT NULL,
     active BOOLEAN NOT NULL,
-    role_id INTEGER,
+    role_id INTEGER NOT NULL,
     CONSTRAINT FK_ROLE_ID FOREIGN KEY (role_id) REFERENCES Roles(id),
     CONSTRAINT UK_email UNIQUE (email)
 );
@@ -39,10 +39,27 @@ INSERT INTO Users (firstname, lastname, dob, email, password, active, role_id) V
 -- Regular users
 ('suraj', 'singh', '1992-01-15', 'suraj.singh@streaming.com', 'suraj123', TRUE, 2),
 ('rohan', 'singh', '1995-10-10', 'rohan.singh@streaming.com', 'rohan123', TRUE, 2),
-('kajol', 'singh', '1945-10-10', 'kajol.singh@streaming.com', 'kajol123', TRUE, 2),
-('geeta', 'singh', '1945-10-13', 'geeta.singh@streaming.com', 'geeta123', TRUE, 2),
+('kajol', 'singh', '1990-10-10', 'kajol.singh@streaming.com', 'kajol123', TRUE, 2),
+('geeta', 'singh', '1992-10-13', 'geeta.singh@streaming.com', 'geeta123', TRUE, 2),
 
 -- Service users
 ('post', 'listing', '1987-11-23', 'post.listing@streaming.com', 'listing123', TRUE, 3), -- Data streaming post listing service
 ('upload', 'management', '1990-04-18', 'upload.management@streaming.com', 'upload123', TRUE, 3),   -- Streaming upload management service
 ('media', 'transcoding', '1985-08-30', 'media.transcoding@streaming.com', 'transcode123', TRUE, 3); -- Streaming transcoding service
+
+
+
+
+-- store procedure to get user by email and password    
+CREATE OR REPLACE FUNCTION UserSignIn(user_email varchar(50), password varchar(100))
+RETURNS TABLE(firstname varchar(25), lastname varchar(25), email varchar(50))
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT U.firstname, U.lastname, U.email 
+    FROM public.Users U 
+    WHERE 
+        U.email = user_email AND U.password = password AND U.active = TRUE;
+END;
+$$

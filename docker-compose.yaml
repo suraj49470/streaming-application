@@ -39,6 +39,14 @@ services:
     restart: always
     ports:
       - 5002:5002
+    environment:
+      - SESSION_SECRET=streaming
+      - SESSION_MAX_AGE=120000
+      - POSTGRES_HOST=streaming-postgres
+      - POSTGRES_USER=streaming
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=streaming
+      - POSTGRES_PORT=5432
     depends_on:
       - streaming-redis
       - streaming-postgres
@@ -54,6 +62,14 @@ services:
     restart: always
     ports:
       - 5000:5000
+    environment:
+      - SESSION_SECRET=streaming
+      - SESSION_MAX_AGE=120000
+      - POSTGRES_HOST=streaming-postgres
+      - POSTGRES_USER=streaming
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=streaming
+      - POSTGRES_PORT=5432
     depends_on:
       - streaming-transcoding-service
       - streaming-postgres
@@ -69,6 +85,14 @@ services:
     restart: always
     ports:
       - 5001:5001
+    environment:
+      - SESSION_SECRET=streaming
+      - SESSION_MAX_AGE=120000
+      - POSTGRES_HOST=streaming-postgres
+      - POSTGRES_USER=streaming
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=streaming
+      - POSTGRES_PORT=5432
     depends_on:
       - streaming-postgres
       - streaming-kafka
@@ -85,6 +109,14 @@ services:
     restart: always
     ports:
       - 5003:5003
+    environment:
+      - SESSION_SECRET=streaming
+      - SESSION_MAX_AGE=120000
+      - POSTGRES_HOST=streaming-postgres
+      - POSTGRES_USER=streaming
+      - POSTGRES_PASSWORD=12345
+      - POSTGRES_DB=streaming
+      - POSTGRES_PORT=5432
     depends_on:
       - streaming-postgres
       - streaming-redis
@@ -130,37 +162,33 @@ services:
     volumes:
       - streaming_postgres_pgadmin:/var/lib/pgadmin
   streaming-zookeeper:
-    image: bitnami/zookeeper:latest
+    image: confluentinc/cp-zookeeper:latest
     container_name: streaming-zookeeper
     hostname: streaming-zookeeper
     environment:
       - ZOOKEEPER_CLIENT_PORT=2181
-      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_TICK_TIME=2000
     ports:
       - 2181:2181
     restart: always
     volumes:
-      - streaming_zookeeper:/bitnami/zookeeper
+      - streaming_zookeeper:/var/lib/zookeeper
     networks:
       - streaming
   streaming-kafka:
-    image: bitnami/kafka:latest
+    image: wurstmeister/kafka:latest
     container_name: streaming-kafka
     hostname: streaming-kafka
     environment:
-      - KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
-      - KAFKA_LISTENER_INTERNAL_SECURITY_PROTOCOL=PLAINTEXT
-      - KAFKA_ADVERTISED_LISTENER=PLAINTEXT://streaming-kafka:9092
-      - KAFKA_LISTENER_PORT=9092
-      - KAFKA_LISTENER_INTERNAL_PORT=9092
-      - KAFKA_LISTENER_NAME=PLAINTEXT
-      - KAFKA_LISTENER_INTERNAL_NAME=INTERNAL
-      - KAFKA_LISTENER_NAME_INTERNAL=INTERNAL
       - KAFKA_ZOOKEEPER_CONNECT=streaming-zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://streaming-kafka:9092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_BROKER_ID=1
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
     ports:
       - 9092:9092
     volumes:
-      - streaming_kafka:/bitnami/kafka
+      - streaming_kafka:/kafka
     depends_on:
       - streaming-zookeeper
     restart: always

@@ -11,6 +11,6 @@ app.get("/healthz", (req, res) => {
 });
 
 httpServer
-  .listen(PORT)
+  .listen(PORT,'0.0.0.0')
   .on("listening", () => console.log(`app is running on port: ${PORT}`))
   .on("error", (error) => console.error(error));

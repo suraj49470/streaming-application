@@ -4,4 +4,4 @@ COPY package*.json .
 RUN npm ci
 COPY . .
 EXPOSE 5003
-CMD [ "npm","start" ]
+CMD [ "npm","run","dev"]
